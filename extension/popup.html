@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Assistant</title>
+
+<style>
+:root{
+  --bg:#0b0b0d;
+  --panel:#0f1113;
+  --muted:#1b1d1f;
+  --accent:#00ff6a;
+  --text:#d8ffe6;
+}
+
+*{box-sizing:border-box}
+html,body{
+  height:100%;
+  margin:0;
+  font-family:Segoe UI,Roboto,Arial,sans-serif;
+  background:transparent;
+}
+
+.popup{
+  width:460px;
+  height:560px;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  color:var(--text);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 12px 36px rgba(0,0,0,.6);
+}
+
+/* Header */
+.header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 6px;
+}
+
+.avatar{
+  width:44px;
+  height:44px;
+  border-radius:10px;
+  background:linear-gradient(135deg,#2a0040,#4a0070);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.title .name{
+  font-weight:700;
+  font-size:15px;
+}
+
+.title .status{
+  font-size:11px;
+  color:#9fbda8;
+}
+
+/* Chat */
+.chat-wrap{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:10px;
+  gap:10px;
+  overflow:auto;
+}
+
+.bubble{
+  max-width:78%;
+  padding:10px 12px;
+  border-radius:12px;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.bubble.bot{
+  align-self:flex-start;
+  background:linear-gradient(180deg,var(--panel),#0c0d0e);
+  border:1px solid rgba(0,255,106,0.06);
+}
+
+.bubble.user{
+  align-self:flex-end;
+  background:linear-gradient(180deg,#06200a,#083115);
+  border:1px solid rgba(0,255,106,0.08);
+  color:var(--accent);
+}
+
+.meta{
+  display:block;
+  font-size:11px;
+  color:#8eaea0;
+  margin-top:6px;
+}
+
+/* Dependency risk */
+.bubble.medium-risk{
+  outline:2px solid #f0c84a;
+  outline-offset:4px;
+}
+
+.bubble.high-risk{
+  outline:2px solid #ff6b6b;
+  outline-offset:4px;
+}
+
+.progress-bar{
+  width:100%;
+  height:10px;
+  background:#1a1a1a;
+  border-radius:6px;
+  margin-top:8px;
+  overflow:hidden;
+}
+
+.progress-bar-inner{
+  width:0%;
+  height:100%;
+  background:#ffd54f;
+  transition:width .6s ease;
+}
+
+.dependency-message{
+  font-size:12px;
+  color:#999;
+  margin-top:8px;
+  line-height:1.4;
+  font-style:italic;
+}
+
+/* Input */
+.composer{
+  display:flex;
+  gap:8px;
+  padding:10px;
+  align-items:center;
+}
+
+.input{
+  flex:1;
+  background:var(--muted);
+  border-radius:999px;
+  padding:8px 12px;
+}
+
+.input input{
+  width:100%;
+  background:transparent;
+  border:0;
+  color:var(--text);
+  outline:none;
+}
+
+.send-btn{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:1px solid rgba(0,255,106,0.12);
+  background:linear-gradient(180deg,#09321a,#06200a);
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  cursor:pointer;
+  transition:transform .08s ease, box-shadow .12s ease;
+}
+.send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,0.45)}
+.send-btn:active{transform:translateY(0)}
+
+/* Blurred state when confirmation modal is active */
+.popup.blurred{
+  filter: blur(6px);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Confirmation modal overlay */
+.confirm-overlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.45);
+  z-index:9999;
+}
+
+.confirm-modal{
+  background:#0f1113;
+  color:var(--text);
+  padding:18px;
+  border-radius:10px;
+  width:320px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.6);
+  text-align:center;
+}
+
+.confirm-modal .time{
+  font-size:13px;
+  color:#b9d6c2;
+  margin-bottom:12px;
+}
+
+.confirm-modal .controls{display:flex;gap:10px;justify-content:center}
+.confirm-modal button{padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+.confirm-continue{background:#00b25a;color:#05120a}
+.confirm-stop{background:#222;color:#ddd}
+</style>
+</head>
+
+<body>
+<div class="popup">
+
+  <div class="header">
+    <div class="avatar"></div>
+    <div class="title">
+      <div class="name">Assistant</div>
+      <div class="status">Online • Active</div>
+    </div>
+  </div>
+
+  <div class="chat-wrap" id="chat">
+    <div class="bubble bot">
+      Hey there! 👋 How can I help you today?
+    </div>
+  </div>
+
+  <div class="composer">
+    <div class="input">
+      <input id="userInput" type="text" placeholder="Type a message..." />
+    </div>
+    <button class="send-btn" id="sendBtn">➤</button>
+  </div>
+
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "AI Dependency Monitor",
+  "version": "1.0",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["activeTab"],
+  "host_permissions": ["http://localhost:3000/*"]
+}
